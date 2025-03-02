@@ -11,48 +11,55 @@ return function(Config, Utilities)
     
     -- Create ESP for an object
     function ESP.Create(object, espType)
-        -- Enhanced Highlight
+        -- Enhanced Highlight with Layered Effect
         local highlight = Instance.new("Highlight")
-        highlight.FillTransparency = 0.75 -- Slightly more opaque for better visibility
-        highlight.OutlineTransparency = 0.1 -- Stronger outline for depth
+        highlight.FillTransparency = 0.8 -- Base fill
+        highlight.OutlineTransparency = 0.1 -- Crisp outline
         highlight.Adornee = object
         highlight.Parent = game.CoreGui
         
-        -- Enhanced BillboardGui
+        -- Subtle glow layer (simulated highlight)
+        local glow = Instance.new("Highlight")
+        glow.FillTransparency = 0.95 -- Very faint
+        glow.OutlineTransparency = 0.6 -- Softer outline
+        glow.Adornee = object
+        glow.Parent = game.CoreGui
+        
+        -- BillboardGui without background
         local billboard = Instance.new("BillboardGui")
-        billboard.Size = UDim2.new(0, 120, 0, 30) -- Slightly larger for better readability
-        billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Raised a bit for cleaner placement
+        billboard.Size = UDim2.new(0, 130, 0, 25) -- Slightly wider, shorter
+        billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Raised for clarity
         billboard.Adornee = object:IsA("Model") and (object.PrimaryPart or object:FindFirstChildWhichIsA("BasePart")) or object
         billboard.AlwaysOnTop = true
         billboard.Parent = game.CoreGui
         
-        -- Background frame for text (subtle backdrop)
-        local bgFrame = Instance.new("Frame")
-        bgFrame.Size = UDim2.new(1, -10, 1, -6) -- Slightly inset
-        bgFrame.Position = UDim2.new(0, 5, 0, 3)
-        bgFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Dark semi-transparent backdrop
-        bgFrame.BackgroundTransparency = 0.7
-        bgFrame.BorderSizePixel = 0
-        bgFrame.Parent = billboard
-        
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 4) -- Rounded edges for polish
-        corner.Parent = bgFrame
-        
-        -- Improved TextLabel
+        -- Main TextLabel
         local label = Instance.new("TextLabel")
         label.Size = UDim2.new(1, 0, 1, 0)
         label.BackgroundTransparency = 1
-        label.TextSize = 14 -- Slightly larger for clarity
-        label.Font = Enum.Font.GothamBold -- Modern, bold font
-        label.TextStrokeTransparency = 0.3 -- Stronger stroke for contrast
-        label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0) -- Black stroke for readability
-        label.Parent = bgFrame
+        label.TextSize = 14
+        label.Font = Enum.Font.GothamBold
+        label.TextStrokeTransparency = 0.2 -- Stronger stroke
+        label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        label.Parent = billboard
+        
+        -- Shadow label for glow effect
+        local shadow = Instance.new("TextLabel")
+        shadow.Size = UDim2.new(1, 2, 1, 2) -- Slightly larger for blur
+        shadow.Position = UDim2.new(0, -1, 0, -1) -- Offset for shadow
+        shadow.BackgroundTransparency = 1
+        shadow.TextSize = 14
+        shadow.Font = Enum.Font.GothamBold
+        shadow.TextStrokeTransparency = 1 -- No stroke, just glow
+        shadow.TextTransparency = 0.5 -- Faint glow
+        shadow.Parent = billboard
         
         local esp = {
             Highlight = highlight,
+            Glow = glow, -- Added for layered effect
             Billboard = billboard,
             Label = label,
+            Shadow = shadow, -- Added for text glow
             Object = object,
             Type = espType,
             LastPosition = nil,
@@ -60,6 +67,7 @@ return function(Config, Utilities)
             Update = function(self)
                 if not Config.Enabled or not self.Object.Parent then
                     self.Highlight.Enabled = false
+                    self.Glow.Enabled = false
                     self.Billboard.Enabled = false
                     return
                 end
@@ -74,11 +82,13 @@ return function(Config, Utilities)
                 local distance = Utilities.getDistance(position)
                 if distance > Config.MaxDistance then
                     self.Highlight.Enabled = false
+                    self.Glow.Enabled = false
                     self.Billboard.Enabled = false
                     return
                 end
                 
                 self.Highlight.Enabled = true
+                self.Glow.Enabled = true
                 self.Billboard.Enabled = true
                 
                 local color
@@ -88,14 +98,23 @@ return function(Config, Utilities)
                     color = Config.Colors[self.Type]
                 end
                 
+                -- Highlight styling
                 self.Highlight.FillColor = color
-                self.Highlight.OutlineColor = color:Lerp(Color3.fromRGB(255, 255, 255), 0.3) -- Lighter outline for pop
+                self.Highlight.OutlineColor = color:Lerp(Color3.fromRGB(255, 255, 255), 0.4) -- Brighter outline
+                self.Glow.FillColor = color:Lerp(Color3.fromRGB(255, 255, 255), 0.6) -- Glow tint
+                self.Glow.OutlineColor = color
+                
+                -- Text styling
+                local text = string.format("%s [%dm]", self.Object.Name, math.floor(distance))
                 self.Label.TextColor3 = color
-                self.Label.Text = string.format("%s [%dm]", self.Object.Name, math.floor(distance))
+                self.Label.Text = text
+                self.Shadow.TextColor3 = color:Lerp(Color3.fromRGB(255, 255, 255), 0.7) -- Subtle white glow
+                self.Shadow.Text = text
             end,
             
             Destroy = function(self)
                 Utilities.safeDestroy(self.Highlight)
+                Utilities.safeDestroy(self.Glow)
                 Utilities.safeDestroy(self.Billboard)
             end
         }

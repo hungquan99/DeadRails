@@ -36,6 +36,29 @@ return function(Config, Utilities, ESP)
         return mostCommonType
     end
     
+    -- Function to determine the dominant color in a cluster
+    function Clusters.GetDominantColor(entities)
+        local colorCounts = {}
+        local highestCount = 0
+        local dominantColor = Config.Colors.Default
+        
+        for _, esp in ipairs(entities) do
+            -- Get the highlight color
+            local color = esp.Highlight.FillColor
+            
+            -- Convert to string for table key
+            local colorStr = tostring(color)
+            colorCounts[colorStr] = (colorCounts[colorStr] or 0) + 1
+            
+            if colorCounts[colorStr] > highestCount then
+                highestCount = colorCounts[colorStr]
+                dominantColor = color
+            end
+        end
+        
+        return dominantColor
+    end
+    
     -- Create a cluster with x-ray visibility
     function Clusters.Create(position, type, count)
         -- Create anchor part for the cluster
@@ -70,12 +93,12 @@ return function(Config, Utilities, ESP)
         infoLabel.Parent = billboard
         
         -- Set color based on type
-        local color
-        if type == "Item" then color = Config.Colors.Default
-        elseif type == "Player" then color = Config.Colors.Player
-        else color = Config.Colors.NPC end
+        local defaultColor
+        if type == "Item" then defaultColor = Config.Colors.Default
+        elseif type == "Player" then defaultColor = Config.Colors.Player
+        else defaultColor = Config.Colors.NPC end
         
-        infoLabel.TextColor3 = color
+        infoLabel.TextColor3 = defaultColor
         
         -- Create cluster object
         local cluster = {
@@ -87,10 +110,15 @@ return function(Config, Utilities, ESP)
             Count = count,
             Entities = {},
             
-            Update = function(self, newPosition, newCount, itemType)
+            Update = function(self, newPosition, newCount, itemType, color)
                 self.Position = newPosition
                 self.Part.Position = newPosition
                 self.Count = newCount
+                
+                -- Update color if provided
+                if color then
+                    self.InfoLabel.TextColor3 = color
+                end
                 
                 local distance = Utilities.getDistance(self.Position)
                 if distance > Config.MaxDistance then
@@ -181,12 +209,24 @@ return function(Config, Utilities, ESP)
                     local avgPos = Vector3.new(0, 0, 0)
                     for _, clusterEsp in ipairs(cluster) do
                         avgPos = avgPos + clusterEsp.Position
+                        
+                        -- IMPORTANT: Don't disable individual highlights
+                        -- Only set InCluster flag for text label purposes
                         clusterEsp.InCluster = true
+                        
+                        -- Keep highlight enabled
+                        clusterEsp.Highlight.Enabled = true
+                        
+                        -- Only disable the billboard for clustered items
+                        clusterEsp.Billboard.Enabled = false
                     end
                     avgPos = avgPos / #cluster
                     
                     -- Determine most common item type
                     local itemType = Clusters.GetMostCommonItemType(cluster)
+                    
+                    -- Get dominant color
+                    local dominantColor = Clusters.GetDominantColor(cluster)
                     
                     -- Create unique ID for this cluster
                     local id = "Item_" .. tostring(math.floor(avgPos.X)) .. "_" .. 
@@ -197,7 +237,8 @@ return function(Config, Utilities, ESP)
                         position = avgPos, 
                         count = #cluster, 
                         entities = cluster,
-                        itemType = itemType
+                        itemType = itemType,
+                        color = dominantColor
                     }
                 end
             end
@@ -207,7 +248,7 @@ return function(Config, Utilities, ESP)
         for id, data in pairs(itemClusters) do
             Clusters.Active[id] = Clusters.Create(data.position, "Item", data.count)
             Clusters.Active[id].Entities = data.entities
-            Clusters.Active[id]:Update(data.position, data.count, data.itemType)
+            Clusters.Active[id]:Update(data.position, data.count, data.itemType, data.color)
         end
     end
     
@@ -291,15 +332,31 @@ return function(Config, Utilities, ESP)
                     local avgPos = Vector3.new(0, 0, 0)
                     for _, clusterEsp in ipairs(cluster) do
                         avgPos = avgPos + clusterEsp.Position
+                        
+                        -- Only set InCluster flag for text label purposes
                         clusterEsp.InCluster = true
+                        
+                        -- Keep highlight enabled
+                        clusterEsp.Highlight.Enabled = true
+                        
+                        -- Only disable the billboard
+                        clusterEsp.Billboard.Enabled = false
                     end
                     avgPos = avgPos / #cluster
+                    
+                    -- Get dominant color
+                    local dominantColor = Clusters.GetDominantColor(cluster)
                     
                     local id = "NPC_" .. tostring(math.floor(avgPos.X)) .. "_" .. 
                               tostring(math.floor(avgPos.Y)) .. "_" .. 
                               tostring(math.floor(avgPos.Z))
                     
-                    npcClusters[id] = {position = avgPos, count = #cluster, entities = cluster}
+                    npcClusters[id] = {
+                        position = avgPos, 
+                        count = #cluster, 
+                        entities = cluster,
+                        color = dominantColor
+                    }
                 end
             end
         end
@@ -331,15 +388,31 @@ return function(Config, Utilities, ESP)
                     local avgPos = Vector3.new(0, 0, 0)
                     for _, clusterEsp in ipairs(cluster) do
                         avgPos = avgPos + clusterEsp.Position
+                        
+                        -- Only set InCluster flag for text label purposes
                         clusterEsp.InCluster = true
+                        
+                        -- Keep highlight enabled
+                        clusterEsp.Highlight.Enabled = true
+                        
+                        -- Only disable the billboard
+                        clusterEsp.Billboard.Enabled = false
                     end
                     avgPos = avgPos / #cluster
+                    
+                    -- Get dominant color
+                    local dominantColor = Clusters.GetDominantColor(cluster)
                     
                     local id = "Player_" .. tostring(math.floor(avgPos.X)) .. "_" .. 
                               tostring(math.floor(avgPos.Y)) .. "_" .. 
                               tostring(math.floor(avgPos.Z))
                     
-                    playerClusters[id] = {position = avgPos, count = #cluster, entities = cluster}
+                    playerClusters[id] = {
+                        position = avgPos, 
+                        count = #cluster, 
+                        entities = cluster,
+                        color = dominantColor
+                    }
                 end
             end
         end
@@ -348,14 +421,14 @@ return function(Config, Utilities, ESP)
         for id, data in pairs(npcClusters) do
             Clusters.Active[id] = Clusters.Create(data.position, "Humanoid", data.count)
             Clusters.Active[id].Entities = data.entities
-            Clusters.Active[id]:Update(data.position, data.count)
+            Clusters.Active[id]:Update(data.position, data.count, nil, data.color)
         end
         
         -- Create player clusters
         for id, data in pairs(playerClusters) do
             Clusters.Active[id] = Clusters.Create(data.position, "Player", data.count)
             Clusters.Active[id].Entities = data.entities
-            Clusters.Active[id]:Update(data.position, data.count)
+            Clusters.Active[id]:Update(data.position, data.count, nil, data.color)
         end
     end
     
@@ -381,8 +454,15 @@ return function(Config, Utilities, ESP)
         local playerPos = Player.Character.HumanoidRootPart.Position
         
         -- Reset clustering flags
-        for _, esp in pairs(ESP.Items) do esp.InCluster = false end
-        for _, esp in pairs(ESP.Humanoids) do esp.InCluster = false end
+        for _, esp in pairs(ESP.Items) do 
+            esp.InCluster = false
+            esp.Billboard.Enabled = true
+        end
+        
+        for _, esp in pairs(ESP.Humanoids) do 
+            esp.InCluster = false
+            esp.Billboard.Enabled = true
+        end
         
         -- Process items and humanoids
         Clusters.ProcessItems(playerPos)

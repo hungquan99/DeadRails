@@ -1,5 +1,5 @@
 -- modules/UI.lua
-return function(Config, ESP, Clusters)
+return function(Config, ESP, DensityManager)
     local CensuraDev = loadstring(game:HttpGet("https://raw.githubusercontent.com/LxckStxp/Censura/main/CensuraDev.lua"))()
     local UI = CensuraDev.new("DeadRails ESP")
     
@@ -10,7 +10,6 @@ return function(Config, ESP, Clusters)
             ESP.ScanForHumanoids() 
         else 
             ESP.Cleanup()
-            Clusters.Cleanup()
         end
     end)
     
@@ -22,12 +21,17 @@ return function(Config, ESP, Clusters)
         Config.MaxDistance = value
     end)
     
-    UI:CreateSlider("Detail Distance", 10, 100, Config.DetailDistance, function(value)
-        Config.DetailDistance = value
+    -- Density Management Settings
+    UI:CreateSlider("Min Opacity", 0, 100, Config.OpacitySettings.MinOpacity * 100, function(value)
+        Config.OpacitySettings.MinOpacity = value / 100
     end)
     
-    UI:CreateSlider("Cluster Distance", 5, 50, Config.ClusterDistance, function(value)
-        Config.ClusterDistance = value
+    UI:CreateSlider("Screen Density Radius", 50, 200, Config.OpacitySettings.ScreenDensityRadius, function(value)
+        Config.OpacitySettings.ScreenDensityRadius = value
+    end)
+    
+    UI:CreateSlider("Focus Radius", 5, 50, Config.OpacitySettings.FocusRadius, function(value)
+        Config.OpacitySettings.FocusRadius = value
     end)
     
     -- Debug toggle if needed

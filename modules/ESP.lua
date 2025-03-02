@@ -11,7 +11,6 @@ return function(Config, Utilities)
     
     -- Create ESP for an object
     function ESP.Create(object, espType)
-        -- Enhanced Highlight with Layered Effect
         local highlight = Instance.new("Highlight")
         highlight.FillTransparency = 0.8
         highlight.OutlineTransparency = 0.1
@@ -24,17 +23,15 @@ return function(Config, Utilities)
         glow.Adornee = object
         glow.Parent = game.CoreGui
         
-        -- BillboardGui
         local billboard = Instance.new("BillboardGui")
-        billboard.Size = UDim2.new(0, 130, 0, espType == "Item" and 25 or 40) -- Taller for humanoids
+        billboard.Size = UDim2.new(0, 130, 0, espType == "Item" and 25 or 40)
         billboard.StudsOffset = Vector3.new(0, 2.5, 0)
         billboard.Adornee = object:IsA("Model") and (object.PrimaryPart or object:FindFirstChildWhichIsA("BasePart")) or object
         billboard.AlwaysOnTop = true
         billboard.Parent = game.CoreGui
         
-        -- Main TextLabel
         local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, 0, espType == "Item" and 1 or 0.5, 0) -- Half height for humanoids
+        label.Size = UDim2.new(1, 0, espType == "Item" and 1 or 0.5, 0)
         label.Position = UDim2.new(0, 0, 0, 0)
         label.BackgroundTransparency = 1
         label.TextSize = 14
@@ -43,7 +40,6 @@ return function(Config, Utilities)
         label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
         label.Parent = billboard
         
-        -- Shadow label for glow effect
         local shadow = Instance.new("TextLabel")
         shadow.Size = UDim2.new(1, 2, espType == "Item" and 1 or 0.5, 2)
         shadow.Position = UDim2.new(0, -1, 0, -1)
@@ -54,27 +50,26 @@ return function(Config, Utilities)
         shadow.TextTransparency = 0.5
         shadow.Parent = billboard
         
-        -- Health bar for humanoids
         local healthBar, healthFill
         if espType ~= "Item" then
             healthBar = Instance.new("Frame")
             healthBar.Size = UDim2.new(1, -10, 0.3, 0)
             healthBar.Position = UDim2.new(0, 5, 0.65, 0)
-            healthBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Dark gray background
+            healthBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
             healthBar.BorderSizePixel = 0
             healthBar.Parent = billboard
             
             healthFill = Instance.new("Frame")
-            healthFill.Size = UDim2.new(1, 0, 1, 0) -- Will adjust width dynamically
+            healthFill.Size = UDim2.new(1, 0, 1, 0)
             healthFill.Position = UDim2.new(0, 0, 0, 0)
-            healthFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green fill
+            healthFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
             healthFill.BorderSizePixel = 0
             healthFill.Parent = healthBar
             
             local corner = Instance.new("UICorner")
             corner.CornerRadius = UDim.new(0, 2)
             corner.Parent = healthBar
-            corner:Clone().Parent = healthFill -- Apply to both for rounded edges
+            corner:Clone().Parent = healthFill
         end
         
         local esp = {
@@ -83,8 +78,8 @@ return function(Config, Utilities)
             Billboard = billboard,
             Label = label,
             Shadow = shadow,
-            HealthBar = healthBar, -- Nil for items
-            HealthFill = healthFill, -- Nil for items
+            HealthBar = healthBar,
+            HealthFill = healthFill,
             Object = object,
             Type = espType,
             LastPosition = nil,
@@ -118,6 +113,17 @@ return function(Config, Utilities)
                 self.Glow.Enabled = true
                 self.Billboard.Enabled = true
                 
+                -- Fade effect as distance approaches MaxDistance
+                local fadeStart = Config.MaxDistance * 0.7 -- Start fading at 70% of MaxDistance
+                local fade = distance > fadeStart and math.clamp((distance - fadeStart) / (Config.MaxDistance - fadeStart), 0, 1) or 0
+                self.Highlight.FillTransparency = 0.8 + fade * 0.2 -- Fade from 0.8 to 1
+                self.Highlight.OutlineTransparency = 0.1 + fade * 0.9 -- Fade from 0.1 to 1
+                self.Glow.FillTransparency = 0.95 + fade * 0.05 -- Fade from 0.95 to 1
+                self.Glow.OutlineTransparency = 0.6 + fade * 0.4 -- Fade from 0.6 to 1
+                self.Label.TextTransparency = fade
+                self.Label.TextStrokeTransparency = 0.2 + fade * 0.8 -- Fade from 0.2 to 1
+                self.Shadow.TextTransparency = 0.5 + fade * 0.5 -- Fade from 0.5 to 1
+                
                 local color
                 if self.Type == "Item" then
                     color = Utilities.getItemColor(self.Object, Config)
@@ -125,31 +131,35 @@ return function(Config, Utilities)
                     color = Config.Colors[self.Type]
                 end
                 
-                -- Highlight styling
                 self.Highlight.FillColor = color
                 self.Highlight.OutlineColor = color:Lerp(Color3.fromRGB(255, 255, 255), 0.4)
                 self.Glow.FillColor = color:Lerp(Color3.fromRGB(255, 255, 255), 0.6)
                 self.Glow.OutlineColor = color
                 
-                -- Text styling
                 local text = string.format("%s [%dm]", self.Object.Name, math.floor(distance))
                 self.Label.TextColor3 = color
                 self.Label.Text = text
                 self.Shadow.TextColor3 = color:Lerp(Color3.fromRGB(255, 255, 255), 0.7)
                 self.Shadow.Text = text
                 
-                -- Health bar for humanoids
                 if self.Type ~= "Item" then
-                    self.HealthBar.Visible = true
-                    local health = Utilities.getHealth(self.Object)
-                    local healthPercent = math.clamp(health.Current / health.Max, 0, 1)
-                    self.HealthFill.Size = UDim2.new(healthPercent, 0, 1, 0)
-                    -- Color gradient: Red (low) to Green (high)
-                    self.HealthFill.BackgroundColor3 = Color3.fromRGB(
-                        255 * (1 - healthPercent), -- Red increases as health decreases
-                        255 * healthPercent,       -- Green increases with health
-                        0                          -- No blue
-                    )
+                    -- Health bar visible only under 100 studs
+                    if distance <= 100 then
+                        self.HealthBar.Visible = true
+                        local health = Utilities.getHealth(self.Object)
+                        local healthPercent = math.clamp(health.Current / health.Max, 0, 1)
+                        self.HealthFill.Size = UDim2.new(healthPercent, 0, 1, 0)
+                        self.HealthFill.BackgroundColor3 = Color3.fromRGB(
+                            255 * (1 - healthPercent),
+                            255 * healthPercent,
+                            0
+                        )
+                        -- Apply fade to health bar
+                        self.HealthBar.BackgroundTransparency = fade
+                        self.HealthFill.BackgroundTransparency = fade
+                    else
+                        self.HealthBar.Visible = false
+                    end
                 end
             end,
             

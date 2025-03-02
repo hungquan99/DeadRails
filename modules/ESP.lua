@@ -11,26 +11,43 @@ return function(Config, Utilities)
     
     -- Create ESP for an object
     function ESP.Create(object, espType)
+        -- Enhanced Highlight
         local highlight = Instance.new("Highlight")
-        highlight.FillTransparency = 0.8
-        highlight.OutlineTransparency = 0.2 -- Slightly visible outline for clarity
+        highlight.FillTransparency = 0.75 -- Slightly more opaque for better visibility
+        highlight.OutlineTransparency = 0.1 -- Stronger outline for depth
         highlight.Adornee = object
         highlight.Parent = game.CoreGui
         
+        -- Enhanced BillboardGui
         local billboard = Instance.new("BillboardGui")
-        billboard.Size = UDim2.new(0, 100, 0, 20)
-        billboard.StudsOffset = Vector3.new(0, 2, 0)
+        billboard.Size = UDim2.new(0, 120, 0, 30) -- Slightly larger for better readability
+        billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Raised a bit for cleaner placement
         billboard.Adornee = object:IsA("Model") and (object.PrimaryPart or object:FindFirstChildWhichIsA("BasePart")) or object
         billboard.AlwaysOnTop = true
         billboard.Parent = game.CoreGui
         
+        -- Background frame for text (subtle backdrop)
+        local bgFrame = Instance.new("Frame")
+        bgFrame.Size = UDim2.new(1, -10, 1, -6) -- Slightly inset
+        bgFrame.Position = UDim2.new(0, 5, 0, 3)
+        bgFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Dark semi-transparent backdrop
+        bgFrame.BackgroundTransparency = 0.7
+        bgFrame.BorderSizePixel = 0
+        bgFrame.Parent = billboard
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 4) -- Rounded edges for polish
+        corner.Parent = bgFrame
+        
+        -- Improved TextLabel
         local label = Instance.new("TextLabel")
         label.Size = UDim2.new(1, 0, 1, 0)
         label.BackgroundTransparency = 1
-        label.TextSize = 12
-        label.Font = Enum.Font.SourceSansBold
-        label.TextStrokeTransparency = 0.5 -- Add stroke for readability
-        label.Parent = billboard
+        label.TextSize = 14 -- Slightly larger for clarity
+        label.Font = Enum.Font.GothamBold -- Modern, bold font
+        label.TextStrokeTransparency = 0.3 -- Stronger stroke for contrast
+        label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0) -- Black stroke for readability
+        label.Parent = bgFrame
         
         local esp = {
             Highlight = highlight,
@@ -38,7 +55,7 @@ return function(Config, Utilities)
             Label = label,
             Object = object,
             Type = espType,
-            LastPosition = nil, -- Cache position for efficiency
+            LastPosition = nil,
             
             Update = function(self)
                 if not Config.Enabled or not self.Object.Parent then
@@ -47,12 +64,11 @@ return function(Config, Utilities)
                     return
                 end
                 
-                -- Update position only if necessary
                 local position = Utilities.getPosition(self.Object)
                 if not self.LastPosition or (position - self.LastPosition).Magnitude > 0.1 then
                     self.LastPosition = position
                 else
-                    position = self.LastPosition -- Reuse cached position
+                    position = self.LastPosition
                 end
                 
                 local distance = Utilities.getDistance(position)
@@ -65,16 +81,15 @@ return function(Config, Utilities)
                 self.Highlight.Enabled = true
                 self.Billboard.Enabled = true
                 
-                -- Set color based on type
                 local color
                 if self.Type == "Item" then
                     color = Utilities.getItemColor(self.Object, Config)
-                else -- Humanoid
+                else
                     color = Config.Colors[self.Type]
                 end
                 
                 self.Highlight.FillColor = color
-                self.Highlight.OutlineColor = color
+                self.Highlight.OutlineColor = color:Lerp(Color3.fromRGB(255, 255, 255), 0.3) -- Lighter outline for pop
                 self.Label.TextColor3 = color
                 self.Label.Text = string.format("%s [%dm]", self.Object.Name, math.floor(distance))
             end,
@@ -92,7 +107,6 @@ return function(Config, Utilities)
     function ESP.Update()
         if not Config.Enabled then return end
         
-        -- Items
         local runtimeItems = workspace:FindFirstChild("RuntimeItems")
         if runtimeItems then
             for _, item in pairs(runtimeItems:GetChildren()) do
@@ -111,7 +125,6 @@ return function(Config, Utilities)
             end
         end
         
-        -- Humanoids
         for _, humanoid in pairs(workspace:GetDescendants()) do
             if humanoid:IsA("Model") and humanoid:FindFirstChildOfClass("Humanoid") and humanoid ~= Player.Character then
                 if not ESP.Humanoids[humanoid] then
@@ -136,13 +149,11 @@ return function(Config, Utilities)
         local lastUpdate = 0
         ESP.Connection = RunService.Heartbeat:Connect(function()
             local currentTime = tick()
-            if currentTime - lastUpdate >= 0.2 then -- Update every 0.2 seconds
+            if currentTime - lastUpdate >= 0.2 then
                 ESP.Update()
                 lastUpdate = currentTime
             end
         end)
-        
-        -- Initial scan to populate ESP immediately
         ESP.Update()
     end
     

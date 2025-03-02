@@ -238,7 +238,7 @@ return function(Config, Utilities, ESP)
                     for otherObject, otherEsp in pairs(ESP.Humanoids) do
                         if otherObject and otherObject.Parent and otherObject ~= object then
                             local otherIsPlayer = Utilities.isPlayerCharacter(otherObject)
-                            if (isPlayer and otherIsPlayer) or (!isPlayer and !otherIsPlayer) then
+                            if (isPlayer and otherIsPlayer) or (not isPlayer and not otherIsPlayer) then
                                 local distBetween = (esp.Position - otherEsp.Position).Magnitude
                                 if distBetween <= Config.ClusterDistance then
                                     nearbyCount = nearbyCount + 1

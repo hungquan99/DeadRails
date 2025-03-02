@@ -1,23 +1,20 @@
--- DeadRails ESP System by LxckStxp
--- Configuration Module
-
 local Config = {
     Enabled = true,
-    ShowInfo = true,
-    MaxDistance = 2000,
-    DetailDistance = 50,
-    ClusterDistance = 30,
+    MaxDistance = 1000,
     Colors = {
-        Default = Color3.fromRGB(200, 200, 200),
-        Player = Color3.fromRGB(0, 255, 0),
-        NPC = Color3.fromRGB(255, 0, 0),
-        Valuable = Color3.fromRGB(0, 255, 0),
-        Corpse = Color3.fromRGB(139, 69, 19),
-        Fuel = Color3.fromRGB(255, 165, 0),
-        Gold = Color3.fromRGB(255, 215, 0),
-        Silver = Color3.fromRGB(192, 192, 192)
-    },
-    Debug = false
+        -- Humanoid Colors
+        Player = Color3.fromRGB(0, 0, 255),    -- Blue for players
+        NPC = Color3.fromRGB(255, 0, 0),       -- Red for NPCs
+        
+        -- Item Colors
+        Default = Color3.fromRGB(200, 200, 200), -- Gray for unidentified items
+        Fuel = Color3.fromRGB(255, 165, 0),     -- Orange for fuel
+        Gold = Color3.fromRGB(255, 215, 0),     -- Yellow for gold
+        Silver = Color3.fromRGB(192, 192, 192), -- Silver for silver
+        Weapon = Color3.fromRGB(255, 0, 255),   -- Magenta for weapons
+        Ammo = Color3.fromRGB(0, 255, 255),     -- Cyan for ammo
+        Medkit = Color3.fromRGB(0, 255, 0)      -- Green for medkits
+    }
 }
 
 return Config

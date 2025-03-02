@@ -31,7 +31,7 @@ function Utilities.safeDestroy(instance)
     end)
 end
 
--- New: Assign colors to items based on their name
+-- Assign colors to items based on their name
 function Utilities.getItemColor(object, Config)
     local name = object.Name:lower()
     if name:find("fuel") or name:find("gas") then return Config.Colors.Fuel end
@@ -39,7 +39,7 @@ function Utilities.getItemColor(object, Config)
     if name:find("silver") then return Config.Colors.Silver end
     if name:find("weapon") or name:find("gun") or name:find("knife") then return Config.Colors.Weapon end
     if name:find("ammo") or name:find("bullet") then return Config.Colors.Ammo end
-    if name:find("medkit") or name:find("health") then return Config.Colors.Medkit end
+    if name:find("bandage") or name:find("snake oil") then return Config.Colors.Healing end
     return Config.Colors.Default -- Fallback for uncategorized items
 end
 

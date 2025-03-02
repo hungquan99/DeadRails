@@ -13,53 +13,78 @@ return function(Config, Utilities)
     function ESP.Create(object, espType)
         -- Enhanced Highlight with Layered Effect
         local highlight = Instance.new("Highlight")
-        highlight.FillTransparency = 0.8 -- Base fill
-        highlight.OutlineTransparency = 0.1 -- Crisp outline
+        highlight.FillTransparency = 0.8
+        highlight.OutlineTransparency = 0.1
         highlight.Adornee = object
         highlight.Parent = game.CoreGui
         
-        -- Subtle glow layer (simulated highlight)
         local glow = Instance.new("Highlight")
-        glow.FillTransparency = 0.95 -- Very faint
-        glow.OutlineTransparency = 0.6 -- Softer outline
+        glow.FillTransparency = 0.95
+        glow.OutlineTransparency = 0.6
         glow.Adornee = object
         glow.Parent = game.CoreGui
         
-        -- BillboardGui without background
+        -- BillboardGui
         local billboard = Instance.new("BillboardGui")
-        billboard.Size = UDim2.new(0, 130, 0, 25) -- Slightly wider, shorter
-        billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Raised for clarity
+        billboard.Size = UDim2.new(0, 130, 0, espType == "Item" and 25 or 40) -- Taller for humanoids
+        billboard.StudsOffset = Vector3.new(0, 2.5, 0)
         billboard.Adornee = object:IsA("Model") and (object.PrimaryPart or object:FindFirstChildWhichIsA("BasePart")) or object
         billboard.AlwaysOnTop = true
         billboard.Parent = game.CoreGui
         
         -- Main TextLabel
         local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, 0, 1, 0)
+        label.Size = UDim2.new(1, 0, espType == "Item" and 1 or 0.5, 0) -- Half height for humanoids
+        label.Position = UDim2.new(0, 0, 0, 0)
         label.BackgroundTransparency = 1
         label.TextSize = 14
         label.Font = Enum.Font.GothamBold
-        label.TextStrokeTransparency = 0.2 -- Stronger stroke
+        label.TextStrokeTransparency = 0.2
         label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
         label.Parent = billboard
         
         -- Shadow label for glow effect
         local shadow = Instance.new("TextLabel")
-        shadow.Size = UDim2.new(1, 2, 1, 2) -- Slightly larger for blur
-        shadow.Position = UDim2.new(0, -1, 0, -1) -- Offset for shadow
+        shadow.Size = UDim2.new(1, 2, espType == "Item" and 1 or 0.5, 2)
+        shadow.Position = UDim2.new(0, -1, 0, -1)
         shadow.BackgroundTransparency = 1
         shadow.TextSize = 14
         shadow.Font = Enum.Font.GothamBold
-        shadow.TextStrokeTransparency = 1 -- No stroke, just glow
-        shadow.TextTransparency = 0.5 -- Faint glow
+        shadow.TextStrokeTransparency = 1
+        shadow.TextTransparency = 0.5
         shadow.Parent = billboard
+        
+        -- Health bar for humanoids
+        local healthBar, healthFill
+        if espType ~= "Item" then
+            healthBar = Instance.new("Frame")
+            healthBar.Size = UDim2.new(1, -10, 0.3, 0)
+            healthBar.Position = UDim2.new(0, 5, 0.65, 0)
+            healthBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Dark gray background
+            healthBar.BorderSizePixel = 0
+            healthBar.Parent = billboard
+            
+            healthFill = Instance.new("Frame")
+            healthFill.Size = UDim2.new(1, 0, 1, 0) -- Will adjust width dynamically
+            healthFill.Position = UDim2.new(0, 0, 0, 0)
+            healthFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green fill
+            healthFill.BorderSizePixel = 0
+            healthFill.Parent = healthBar
+            
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(0, 2)
+            corner.Parent = healthBar
+            corner:Clone().Parent = healthFill -- Apply to both for rounded edges
+        end
         
         local esp = {
             Highlight = highlight,
-            Glow = glow, -- Added for layered effect
+            Glow = glow,
             Billboard = billboard,
             Label = label,
-            Shadow = shadow, -- Added for text glow
+            Shadow = shadow,
+            HealthBar = healthBar, -- Nil for items
+            HealthFill = healthFill, -- Nil for items
             Object = object,
             Type = espType,
             LastPosition = nil,
@@ -69,6 +94,7 @@ return function(Config, Utilities)
                     self.Highlight.Enabled = false
                     self.Glow.Enabled = false
                     self.Billboard.Enabled = false
+                    if self.HealthBar then self.HealthBar.Visible = false end
                     return
                 end
                 
@@ -84,6 +110,7 @@ return function(Config, Utilities)
                     self.Highlight.Enabled = false
                     self.Glow.Enabled = false
                     self.Billboard.Enabled = false
+                    if self.HealthBar then self.HealthBar.Visible = false end
                     return
                 end
                 
@@ -100,16 +127,30 @@ return function(Config, Utilities)
                 
                 -- Highlight styling
                 self.Highlight.FillColor = color
-                self.Highlight.OutlineColor = color:Lerp(Color3.fromRGB(255, 255, 255), 0.4) -- Brighter outline
-                self.Glow.FillColor = color:Lerp(Color3.fromRGB(255, 255, 255), 0.6) -- Glow tint
+                self.Highlight.OutlineColor = color:Lerp(Color3.fromRGB(255, 255, 255), 0.4)
+                self.Glow.FillColor = color:Lerp(Color3.fromRGB(255, 255, 255), 0.6)
                 self.Glow.OutlineColor = color
                 
                 -- Text styling
                 local text = string.format("%s [%dm]", self.Object.Name, math.floor(distance))
                 self.Label.TextColor3 = color
                 self.Label.Text = text
-                self.Shadow.TextColor3 = color:Lerp(Color3.fromRGB(255, 255, 255), 0.7) -- Subtle white glow
+                self.Shadow.TextColor3 = color:Lerp(Color3.fromRGB(255, 255, 255), 0.7)
                 self.Shadow.Text = text
+                
+                -- Health bar for humanoids
+                if self.Type ~= "Item" then
+                    self.HealthBar.Visible = true
+                    local health = Utilities.getHealth(self.Object)
+                    local healthPercent = math.clamp(health.Current / health.Max, 0, 1)
+                    self.HealthFill.Size = UDim2.new(healthPercent, 0, 1, 0)
+                    -- Color gradient: Red (low) to Green (high)
+                    self.HealthFill.BackgroundColor3 = Color3.fromRGB(
+                        255 * (1 - healthPercent), -- Red increases as health decreases
+                        255 * healthPercent,       -- Green increases with health
+                        0                          -- No blue
+                    )
+                end
             end,
             
             Destroy = function(self)

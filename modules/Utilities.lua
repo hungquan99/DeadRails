@@ -65,4 +65,16 @@ function Utilities.getItemColor(object, Config)
     return Config.Colors.Default -- Fallback for uncategorized items
 end
 
+-- Get health information for a humanoid
+function Utilities.getHealth(model)
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        return {
+            Current = humanoid.Health,
+            Max = humanoid.MaxHealth
+        }
+    end
+    return { Current = 0, Max = 100 } -- Fallback if no humanoid found
+end
+
 return Utilities

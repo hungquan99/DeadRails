@@ -35,28 +35,30 @@ end
 function Utilities.getItemColor(object, Config)
     local name = object.Name:lower()
     
-    -- Check high-value items first (Gold and Silver take priority)
+    -- Check high-value items first (Gold, Silver, Rare take priority)
     if name:find("gold") then return Config.Colors.Gold end
     if name:find("silver") then return Config.Colors.Silver end
+    if name:find("holy water") or name:find("crucifix") or name:find("bond") then return Config.Colors.Rare end
     
-    -- Check TextLabels inside the item
+    -- Check TextLabels and name for other categories
     for _, child in pairs(object:GetDescendants()) do
         if child:IsA("TextLabel") and child.Text ~= "" then
             local labelText = child.Text:lower()
             if labelText == "corpse" or name:find("corpse") then return Config.Colors.Corpse end
             if labelText == "fuel" or name:find("fuel") or name:find("gas") then return Config.Colors.Fuel end
             if labelText == "ammo" or name:find("ammo") or name:find("bullet") then return Config.Colors.Ammo end
-            if labelText == "weapon" or name:find("weapon") or name:find("gun") or name:find("knife") then return Config.Colors.Weapon end
+            if labelText == "gun" or labelText == "weapon" or labelText == "melee" or 
+               name:find("gun") or name:find("weapon") or name:find("melee") then return Config.Colors.Weapon end
             if labelText == "junk" or name:find("junk") then return Config.Colors.Junk end
             if name:find("bandage") or name:find("snake oil") then return Config.Colors.Healing end
         end
     end
     
-    -- Check name if no TextLabel matches (fallback for items without labels)
+    -- Check name if no TextLabel matches
     if name:find("corpse") then return Config.Colors.Corpse end
     if name:find("fuel") or name:find("gas") then return Config.Colors.Fuel end
     if name:find("ammo") or name:find("bullet") then return Config.Colors.Ammo end
-    if name:find("weapon") or name:find("gun") or name:find("knife") then return Config.Colors.Weapon end
+    if name:find("gun") or name:find("weapon") or name:find("melee") then return Config.Colors.Weapon end
     if name:find("junk") then return Config.Colors.Junk end
     if name:find("bandage") or name:find("snake oil") then return Config.Colors.Healing end
     

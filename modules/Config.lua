@@ -13,7 +13,7 @@ local Config = {
         Silver = Color3.fromRGB(192, 192, 192), -- Silver for silver
         Weapon = Color3.fromRGB(255, 0, 255),   -- Magenta for weapons
         Ammo = Color3.fromRGB(0, 255, 255),     -- Cyan for ammo
-        Medkit = Color3.fromRGB(0, 255, 0)      -- Green for medkits
+        Healing = Color3.fromRGB(0, 255, 0)     -- Green for bandages and snake oil
     }
 }
 

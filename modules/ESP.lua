@@ -13,7 +13,7 @@ return function(Config, Utilities)
     function ESP.Create(object, espType)
         local highlight = Instance.new("Highlight")
         highlight.FillTransparency = 0.8
-        highlight.OutlineTransparency = 0
+        highlight.OutlineTransparency = 0.2 -- Slightly visible outline for clarity
         highlight.Adornee = object
         highlight.Parent = game.CoreGui
         
@@ -29,6 +29,7 @@ return function(Config, Utilities)
         label.BackgroundTransparency = 1
         label.TextSize = 12
         label.Font = Enum.Font.SourceSansBold
+        label.TextStrokeTransparency = 0.5 -- Add stroke for readability
         label.Parent = billboard
         
         local esp = {
@@ -37,6 +38,7 @@ return function(Config, Utilities)
             Label = label,
             Object = object,
             Type = espType,
+            LastPosition = nil, -- Cache position for efficiency
             
             Update = function(self)
                 if not Config.Enabled or not self.Object.Parent then
@@ -45,9 +47,15 @@ return function(Config, Utilities)
                     return
                 end
                 
+                -- Update position only if necessary
                 local position = Utilities.getPosition(self.Object)
-                local distance = Utilities.getDistance(position)
+                if not self.LastPosition or (position - self.LastPosition).Magnitude > 0.1 then
+                    self.LastPosition = position
+                else
+                    position = self.LastPosition -- Reuse cached position
+                end
                 
+                local distance = Utilities.getDistance(position)
                 if distance > Config.MaxDistance then
                     self.Highlight.Enabled = false
                     self.Billboard.Enabled = false
@@ -85,8 +93,9 @@ return function(Config, Utilities)
         if not Config.Enabled then return end
         
         -- Items
-        if workspace:FindFirstChild("RuntimeItems") then
-            for _, item in pairs(workspace.RuntimeItems:GetChildren()) do
+        local runtimeItems = workspace:FindFirstChild("RuntimeItems")
+        if runtimeItems then
+            for _, item in pairs(runtimeItems:GetChildren()) do
                 if not ESP.Items[item] then
                     ESP.Items[item] = ESP.Create(item, "Item")
                 end
@@ -132,12 +141,19 @@ return function(Config, Utilities)
                 lastUpdate = currentTime
             end
         end)
+        
+        -- Initial scan to populate ESP immediately
+        ESP.Update()
     end
     
     -- Cleanup
     function ESP.Cleanup()
-        for _, esp in pairs(ESP.Items) do esp:Destroy() end
-        for _, esp in pairs(ESP.Humanoids) do esp:Destroy() end
+        for _, esp in pairs(ESP.Items) do
+            esp:Destroy()
+        end
+        for _, esp in pairs(ESP.Humanoids) do
+            esp:Destroy()
+        end
         ESP.Items = {}
         ESP.Humanoids = {}
         if ESP.Connection then

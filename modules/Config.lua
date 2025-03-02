@@ -7,13 +7,15 @@ local Config = {
         NPC = Color3.fromRGB(255, 0, 0),       -- Red for NPCs
         
         -- Item Colors
-        Default = Color3.fromRGB(200, 200, 200), -- Gray for unidentified items
+        Default = Color3.fromRGB(200, 200, 200), -- Gray for unidentified/junk items
+        Corpse = Color3.fromRGB(139, 69, 19),   -- Brown for corpses
         Fuel = Color3.fromRGB(255, 165, 0),     -- Orange for fuel
-        Gold = Color3.fromRGB(255, 215, 0),     -- Yellow for gold
-        Silver = Color3.fromRGB(192, 192, 192), -- Silver for silver
-        Weapon = Color3.fromRGB(255, 0, 255),   -- Magenta for weapons
         Ammo = Color3.fromRGB(0, 255, 255),     -- Cyan for ammo
-        Healing = Color3.fromRGB(0, 255, 0)     -- Green for bandages and snake oil
+        Weapon = Color3.fromRGB(255, 0, 255),   -- Magenta for weapons
+        Junk = Color3.fromRGB(100, 100, 100),   -- Dark gray for junk
+        Healing = Color3.fromRGB(0, 255, 0),    -- Green for bandages and snake oil
+        Gold = Color3.fromRGB(255, 215, 0),     -- Yellow for gold (high value)
+        Silver = Color3.fromRGB(192, 192, 192)  -- Silver for silver (high value)
     }
 }
 

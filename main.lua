@@ -8,9 +8,11 @@ local baseUrl = "https://raw.githubusercontent.com/LxckStxp/DeadRails/main/modul
 local Config = loadstring(game:HttpGet(baseUrl .. "Config.lua"))()
 local Utilities = loadstring(game:HttpGet(baseUrl .. "Utilities.lua"))()
 local ESP = loadstring(game:HttpGet(baseUrl .. "ESP.lua"))()(Config, Utilities)
-local UI = loadstring(game:HttpGet(baseUrl .. "UI.lua"))()(Config, ESP)
+local MiddleClick = loadstring(game:HttpGet(baseUrl .. "MiddleClick.lua"))()
+local UI = loadstring(game:HttpGet(baseUrl .. "UI.lua"))()(Config, ESP, MiddleClick)
 
--- Initialize the ESP system
+-- Initialize the ESP and MiddleClick systems
 ESP.Initialize()
+MiddleClick.Initialize()
 
 print("DeadRails ESP Loaded Successfully!")

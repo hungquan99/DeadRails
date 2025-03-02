@@ -24,14 +24,14 @@ return function(Config, Utilities)
         glow.Parent = game.CoreGui
         
         local billboard = Instance.new("BillboardGui")
-        billboard.Size = UDim2.new(0, 130, 0, espType == "Item" and 25 or 40)
+        billboard.Size = UDim2.new(0, 130, 0, espType == "Item" and 25 or 35) -- Reduced height for humanoids
         billboard.StudsOffset = Vector3.new(0, 2.5, 0)
         billboard.Adornee = object:IsA("Model") and (object.PrimaryPart or object:FindFirstChildWhichIsA("BasePart")) or object
         billboard.AlwaysOnTop = true
         billboard.Parent = game.CoreGui
         
         local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, 0, espType == "Item" and 1 or 0.5, 0)
+        label.Size = UDim2.new(1, 0, espType == "Item" and 1 or 0.6, 0) -- Adjusted for smaller health bar
         label.Position = UDim2.new(0, 0, 0, 0)
         label.BackgroundTransparency = 1
         label.TextSize = 14
@@ -41,7 +41,7 @@ return function(Config, Utilities)
         label.Parent = billboard
         
         local shadow = Instance.new("TextLabel")
-        shadow.Size = UDim2.new(1, 2, espType == "Item" and 1 or 0.5, 2)
+        shadow.Size = UDim2.new(1, 2, espType == "Item" and 1 or 0.6, 2)
         shadow.Position = UDim2.new(0, -1, 0, -1)
         shadow.BackgroundTransparency = 1
         shadow.TextSize = 14
@@ -50,25 +50,48 @@ return function(Config, Utilities)
         shadow.TextTransparency = 0.5
         shadow.Parent = billboard
         
-        local healthBar, healthFill
+        local healthBar, healthFill, healthBorder
         if espType ~= "Item" then
+            -- Health bar container (thinner, sleeker)
             healthBar = Instance.new("Frame")
-            healthBar.Size = UDim2.new(1, -10, 0.3, 0)
-            healthBar.Position = UDim2.new(0, 5, 0.65, 0)
-            healthBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            healthBar.BorderSizePixel = 0
+            healthBar.Size = UDim2.new(0.9, 0, 0.15, 0) -- Narrower and flatter
+            healthBar.Position = UDim2.new(0.05, 0, 0.75, 0) -- Centered below text
+            healthBar.BackgroundTransparency = 1 -- No background
             healthBar.Parent = billboard
             
+            -- Health bar border (outline)
+            healthBorder = Instance.new("Frame")
+            healthBorder.Size = UDim2.new(1, 4, 1, 4) -- Slightly larger for outline
+            healthBorder.Position = UDim2.new(0, -2, 0, -2)
+            healthBorder.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Dark outline
+            healthBorder.BackgroundTransparency = 0.5
+            healthBorder.BorderSizePixel = 0
+            healthBorder.ZIndex = 0 -- Behind fill
+            healthBorder.Parent = healthBar
+            
+            -- Health fill (smooth gradient)
             healthFill = Instance.new("Frame")
-            healthFill.Size = UDim2.new(1, 0, 1, 0)
+            healthFill.Size = UDim2.new(1, 0, 1, 0) -- Dynamic width
             healthFill.Position = UDim2.new(0, 0, 0, 0)
             healthFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
             healthFill.BorderSizePixel = 0
+            healthFill.ZIndex = 1 -- Above border
             healthFill.Parent = healthBar
             
+            -- Gradient for fill
+            local gradient = Instance.new("UIGradient")
+            gradient.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 0)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 0))
+            })
+            gradient.Rotation = 0 -- Horizontal gradient
+            gradient.Parent = healthFill
+            
+            -- Rounded corners
             local corner = Instance.new("UICorner")
-            corner.CornerRadius = UDim.new(0, 2)
-            corner.Parent = healthBar
+            corner.CornerRadius = UDim.new(0, 3)
+            corner.Parent = healthBorder
             corner:Clone().Parent = healthFill
         end
         
@@ -80,6 +103,7 @@ return function(Config, Utilities)
             Shadow = shadow,
             HealthBar = healthBar,
             HealthFill = healthFill,
+            HealthBorder = healthBorder, -- Added for outline
             Object = object,
             Type = espType,
             LastPosition = nil,
@@ -113,16 +137,16 @@ return function(Config, Utilities)
                 self.Glow.Enabled = true
                 self.Billboard.Enabled = true
                 
-                -- Fade effect as distance approaches MaxDistance
-                local fadeStart = Config.MaxDistance * 0.7 -- Start fading at 70% of MaxDistance
+                -- Fade effect
+                local fadeStart = Config.MaxDistance * 0.7
                 local fade = distance > fadeStart and math.clamp((distance - fadeStart) / (Config.MaxDistance - fadeStart), 0, 1) or 0
-                self.Highlight.FillTransparency = 0.8 + fade * 0.2 -- Fade from 0.8 to 1
-                self.Highlight.OutlineTransparency = 0.1 + fade * 0.9 -- Fade from 0.1 to 1
-                self.Glow.FillTransparency = 0.95 + fade * 0.05 -- Fade from 0.95 to 1
-                self.Glow.OutlineTransparency = 0.6 + fade * 0.4 -- Fade from 0.6 to 1
+                self.Highlight.FillTransparency = 0.8 + fade * 0.2
+                self.Highlight.OutlineTransparency = 0.1 + fade * 0.9
+                self.Glow.FillTransparency = 0.95 + fade * 0.05
+                self.Glow.OutlineTransparency = 0.6 + fade * 0.4
                 self.Label.TextTransparency = fade
-                self.Label.TextStrokeTransparency = 0.2 + fade * 0.8 -- Fade from 0.2 to 1
-                self.Shadow.TextTransparency = 0.5 + fade * 0.5 -- Fade from 0.5 to 1
+                self.Label.TextStrokeTransparency = 0.2 + fade * 0.8
+                self.Shadow.TextTransparency = 0.5 + fade * 0.5
                 
                 local color
                 if self.Type == "Item" then
@@ -143,19 +167,13 @@ return function(Config, Utilities)
                 self.Shadow.Text = text
                 
                 if self.Type ~= "Item" then
-                    -- Health bar visible only under 100 studs
                     if distance <= 100 then
                         self.HealthBar.Visible = true
                         local health = Utilities.getHealth(self.Object)
                         local healthPercent = math.clamp(health.Current / health.Max, 0, 1)
                         self.HealthFill.Size = UDim2.new(healthPercent, 0, 1, 0)
-                        self.HealthFill.BackgroundColor3 = Color3.fromRGB(
-                            255 * (1 - healthPercent),
-                            255 * healthPercent,
-                            0
-                        )
                         -- Apply fade to health bar
-                        self.HealthBar.BackgroundTransparency = fade
+                        self.HealthBorder.BackgroundTransparency = 0.5 + fade * 0.5 -- Fade from 0.5 to 1
                         self.HealthFill.BackgroundTransparency = fade
                     else
                         self.HealthBar.Visible = false

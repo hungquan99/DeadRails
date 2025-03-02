@@ -197,26 +197,7 @@ return function(Config, Utilities, ESP)
     ESP.Update = function()
         originalUpdate()
         DensityManager.Update()
-    end
-    
-    -- Add these configuration settings to UI
-    local function AddDensityUI(UI)
-        -- Create density management section
-        UI:CreateSlider("Min Opacity", 0, 100, Config.OpacitySettings.MinOpacity * 100, function(value)
-            Config.OpacitySettings.MinOpacity = value / 100
-        end)
-        
-        UI:CreateSlider("Screen Density Radius", 50, 200, Config.OpacitySettings.ScreenDensityRadius, function(value)
-            Config.OpacitySettings.ScreenDensityRadius = value
-        end)
-        
-        UI:CreateSlider("Focus Radius", 5, 50, Config.OpacitySettings.FocusRadius, function(value)
-            Config.OpacitySettings.FocusRadius = value
-        end)
-    end
-    
-    -- Example of how to use this in your main code:
-    -- AddDensityUI(UI)
+    end    
     
     return DensityManager
 end

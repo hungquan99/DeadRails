@@ -24,7 +24,8 @@ return function(Config, ESP, MiddleClick, Aimbot)
     end)
     
     -- Aimbot Toggle (with safe access and debug)
-    UI:CreateToggle("Aimbot", Aimbot and Aimbot.Enabled or false, function(state)
+    local aimbotEnabled = (Aimbot and Aimbot.Enabled ~= nil) and Aimbot.Enabled or false
+    UI:CreateToggle("Aimbot", aimbotEnabled, function(state)
         if Aimbot and Aimbot.Enabled ~= nil then
             Aimbot.Enabled = state
             print("Aimbot toggled to:", state)

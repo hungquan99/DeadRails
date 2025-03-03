@@ -7,7 +7,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         Items = {},
         Humanoids = {},
         Connection = nil,
-        VanillaUIVisible = true -- Track vanilla UI state
+        VanillaUIVisible = true
     }
     
     -- Function to hide vanilla name/health bars for players
@@ -16,13 +16,11 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= Player and player.Character and player.Character:FindFirstChild("Humanoid") then
-                -- Find and hide the PlayerList or BillboardGui for names/health
                 local playerGui = player:FindFirstChild("PlayerGui")
                 if playerGui then
-                    -- Check for Roblox's default name/health UI (often in CoreGui or PlayerGui)
                     for _, gui in pairs({game.CoreGui, playerGui}) do
                         for _, child in pairs(gui:GetChildren()) do
-                            if child:IsA("BillboardGui") and child.Name:match("NameGui") or child.Name:match("HealthGui") then
+                            if child:IsA("BillboardGui") and (child.Name:match("NameGui") or child.Name:match("HealthGui")) then
                                 child.Enabled = false
                             end
                         end
@@ -43,7 +41,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
                 if playerGui then
                     for _, gui in pairs({game.CoreGui, playerGui}) do
                         for _, child in pairs(gui:GetChildren()) do
-                            if child:IsA("BillboardGui") and child.Name:match("NameGui") or child.Name:match("HealthGui") then
+                            if child:IsA("BillboardGui") and (child.Name:match("NameGui") or child.Name:match("HealthGui")) then
                                 child.Enabled = true
                             end
                         end
@@ -112,7 +110,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         end)
         ESPManager.Update()
         
-        -- Hide vanilla UI when initializing ESP
+        -- Hide vanilla UI initially if ESP is enabled
         if Config.Enabled then
             hideVanillaUI()
         end
@@ -136,21 +134,17 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         restoreVanillaUI()
     end
     
-    -- Hook into Config.Enabled changes for real-time UI toggling
-    local originalEnabled = Config.Enabled
-    setmetatable(Config, {
-        __newindex = function(t, k, v)
-            if k == "Enabled" and v ~= originalEnabled then
-                if v then
-                    hideVanillaUI()
-                else
-                    restoreVanillaUI()
-                end
-                originalEnabled = v
-            end
-            rawset(t, k, v)
+    -- Handle ESP enable/disable explicitly
+    function ESPManager.SetEnabled(enabled)
+        Config.Enabled = enabled
+        if enabled then
+            hideVanillaUI()
+            ESPManager.Update() -- Force an update to re-enable ESP
+        else
+            restoreVanillaUI()
+            ESPManager.Cleanup()
         end
-    })
+    end
     
     return ESPManager
 end

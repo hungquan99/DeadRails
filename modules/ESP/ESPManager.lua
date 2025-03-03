@@ -9,7 +9,6 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         Connection = nil
     }
     
-    -- Update all ESP objects
     function ESPManager.Update()
         if not Config.Enabled then return end
         
@@ -50,7 +49,6 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         end
     end
     
-    -- Initialize ESP system
     function ESPManager.Initialize()
         local lastUpdate = 0
         ESPManager.Connection = RunService.Heartbeat:Connect(function()
@@ -63,7 +61,6 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         ESPManager.Update()
     end
     
-    -- Cleanup
     function ESPManager.Cleanup()
         for _, esp in pairs(ESPManager.Items) do
             esp:Destroy()

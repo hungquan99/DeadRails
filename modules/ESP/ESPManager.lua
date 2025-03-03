@@ -29,6 +29,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
             end
         end
         ESPManager.VanillaUIVisible = false
+        print("Vanilla UI hidden - ESP Enabled")
     end
     
     -- Function to restore vanilla name/health bars
@@ -50,6 +51,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
             end
         end
         ESPManager.VanillaUIVisible = true
+        print("Vanilla UI restored - ESP Disabled")
     end
     
     function ESPManager.Update()
@@ -114,6 +116,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         if Config.Enabled then
             hideVanillaUI()
         end
+        print("ESP Initialized - Enabled:", Config.Enabled)
     end
     
     function ESPManager.Cleanup()
@@ -132,17 +135,43 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         
         -- Restore vanilla UI when cleaning up
         restoreVanillaUI()
+        print("ESP Cleaned Up - Restored Vanilla UI")
     end
     
-    -- Handle ESP enable/disable explicitly
+    -- Handle ESP enable/disable with reset and debug
     function ESPManager.SetEnabled(enabled)
+        print("Attempting to set ESP Enabled to:", enabled)
+        
+        -- Ensure Config.Enabled reflects the desired state
         Config.Enabled = enabled
+        
         if enabled then
             hideVanillaUI()
-            ESPManager.Update() -- Force an update to re-enable ESP
+            ESPManager.Initialize() -- Re-initialize to reset state fully
+            ESPManager.Update() -- Ensure all objects are recreated
+            print("ESP Re-enabled successfully")
         else
             restoreVanillaUI()
             ESPManager.Cleanup()
+            print("ESP Disabled successfully")
+        end
+    end
+    
+    -- Expose current enabled state for external checks
+    function ESPManager.IsEnabled()
+        return Config.Enabled
+    end
+    
+    -- Handle CensuraDev toggle keybind integration
+    function ESPManager.HandleToggleKey()
+        local system = getgenv().CensuraSystem
+        if not system then return end
+        
+        return function()
+            local newState = not ESPManager.IsEnabled()
+            print("Keybind Toggling ESP to:", newState)
+            ESPManager.SetEnabled(newState)
+            return newState
         end
     end
     

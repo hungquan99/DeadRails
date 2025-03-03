@@ -23,5 +23,10 @@ return function(Config, ESP, MiddleClick)
         MiddleClick.Enabled = state
     end)
     
+    -- Aimbot Toggle
+    UI:CreateToggle("Aimbot", false, function(state)
+        Aimbot.Enabled = state
+    end)
+    
     return UI
 end

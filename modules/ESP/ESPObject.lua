@@ -3,7 +3,6 @@ return function(Config, Utilities, ESPConfig)
     
     local ESPObject = {}
     
-    -- Create an ESP object
     function ESPObject.Create(object, espType)
         local highlight = Instance.new("Highlight")
         highlight.FillTransparency = 0.8

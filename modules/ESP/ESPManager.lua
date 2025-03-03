@@ -12,6 +12,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
     function ESPManager.Update()
         if not Config.Enabled then return end
         
+        -- Handle items (corpses, etc.)
         local runtimeItems = workspace:FindFirstChild("RuntimeItems")
         if runtimeItems then
             for _, item in pairs(runtimeItems:GetChildren()) do
@@ -30,9 +31,11 @@ return function(Config, Utilities, ESPObject, ESPConfig)
             end
         end
         
+        -- Handle humanoids (track alive ones only)
         for _, humanoid in pairs(workspace:GetDescendants()) do
             if humanoid:IsA("Model") and humanoid:FindFirstChildOfClass("Humanoid") and humanoid ~= Player.Character then
-                if not ESPManager.Humanoids[humanoid] then
+                local hum = humanoid:FindFirstChildOfClass("Humanoid")
+                if hum and hum.Health > 0 and not ESPManager.Humanoids[humanoid] then
                     local isPlayer = Utilities.isPlayerCharacter(humanoid)
                     ESPManager.Humanoids[humanoid] = ESPObject.Create(humanoid, isPlayer and "Player" or "NPC")
                 end
@@ -41,7 +44,14 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         
         for humanoid, esp in pairs(ESPManager.Humanoids) do
             if humanoid.Parent then
-                esp:Update()
+                local hum = humanoid:FindFirstChildOfClass("Humanoid")
+                if hum and hum.Health > 0 then
+                    esp:Update()
+                else
+                    -- Humanoid is dead, stop tracking as enemy
+                    esp:Destroy()
+                    ESPManager.Humanoids[humanoid] = nil
+                end
             else
                 esp:Destroy()
                 ESPManager.Humanoids[humanoid] = nil

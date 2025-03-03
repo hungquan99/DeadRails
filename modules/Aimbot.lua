@@ -10,7 +10,7 @@ local Aimbot = {
     Target = nil,   -- Current NPC target
     Settings = {
         AimKey = Enum.UserInputType.MouseButton2, -- RightClick
-        HeadOffset = Vector3.new(0, 1.5, 0) -- Approximate head position offset (adjust as needed for DeadRails NPCs)
+        -- Removed HeadOffset for direct head targeting
     }
 }
 
@@ -19,7 +19,7 @@ local function getNPCs()
     local npcs = {}
     for _, humanoid in pairs(workspace:GetDescendants()) do
         if humanoid:IsA("Model") and humanoid:FindFirstChildOfClass("Humanoid") and humanoid ~= Player.Character then
-            local isPlayer = Player.Character and Player.Character == humanoid
+            local isPlayer = Players:GetPlayerFromCharacter(humanoid)
             if not isPlayer and humanoid:FindFirstChildOfClass("Humanoid").Health > 0 then
                 table.insert(npcs, humanoid)
             end
@@ -28,7 +28,7 @@ local function getNPCs()
     return npcs
 end
 
--- Find closest NPC to crosshair
+-- Find closest NPC to crosshair (excluding players)
 local function findClosestNPC()
     local mouse = UserInputService:GetMouseLocation()
     local ray = Camera:ScreenPointToRay(mouse.X, mouse.Y)
@@ -43,7 +43,8 @@ local function findClosestNPC()
         local model = raycastResult.Instance:FindFirstAncestorOfClass("Model")
         if model and model:FindFirstChildOfClass("Humanoid") and model ~= Player.Character then
             local hum = model:FindFirstChildOfClass("Humanoid")
-            if hum and hum.Health > 0 and not Players:GetPlayerFromCharacter(model) then
+            local isPlayer = Players:GetPlayerFromCharacter(model)
+            if hum and hum.Health > 0 and not isPlayer then
                 closestNPC = model
                 closestDistance = (Camera.CFrame.Position - raycastResult.Position).Magnitude
             end
@@ -68,14 +69,14 @@ local function findClosestNPC()
     return closestNPC
 end
 
--- Aim at target’s head
+-- Aim at target’s head directly
 local function aimAtTarget(target)
     if not target or not target.PrimaryPart then return end
     
     local head = target:FindFirstChild("Head") or target.PrimaryPart
     if not head then return end
     
-    local targetPos = head.Position + Aimbot.Settings.HeadOffset
+    local targetPos = head.Position -- Direct head targeting, no offset
     local lookVector = (targetPos - Camera.CFrame.Position).Unit
     local newCFrame = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + lookVector)
     

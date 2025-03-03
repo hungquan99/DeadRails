@@ -69,7 +69,7 @@ local function findClosestNPC()
     return closestNPC
 end
 
--- Aim at target’s head directly
+-- Aim at target’s head instantly
 local function aimAtTarget()
     if not Aimbot.Target or not Aimbot.Target.PrimaryPart then return end
     
@@ -80,10 +80,8 @@ local function aimAtTarget()
     local lookVector = (targetPos - Camera.CFrame.Position).Unit
     local newCFrame = CFrame.new(Camera.CFrame.Position, Camera.CFrame.Position + lookVector)
     
-    -- Smooth aim (optional, adjust for DeadRails’ needs)
-    local currentCFrame = Camera.CFrame
-    local smoothFactor = 0.15 -- Adjust for smoothness (0.1–0.3 works well)
-    Camera.CFrame = currentCFrame:Lerp(newCFrame, smoothFactor)
+    -- Instant aim (no smoothing)
+    Camera.CFrame = newCFrame
 end
 
 -- Handle input for aimbot

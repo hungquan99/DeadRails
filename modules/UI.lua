@@ -4,27 +4,30 @@ return function(Config, ESP, MiddleClick)
     
     -- Sync UI toggle with ESP state
     local function syncUIToggle()
-        local toggle = UI:CreateToggle("ESP Enable", ESP.IsEnabled(), function(state)
+        local defaultState = ESP.IsEnabled and ESP.IsEnabled() or Config.Enabled -- Fallback to Config.Enabled if IsEnabled is nil
+        local toggle = UI:CreateToggle("ESP Enable", defaultState, function(state)
             print("UI Toggling ESP to:", state)
             ESP.SetEnabled(state)
         end)
         
         -- Ensure toggle reflects state changes from keybinds
         local function updateToggleState()
-            toggle:SetState(ESP.IsEnabled(), true) -- Skip callback to avoid recursion
+            local currentState = ESP.IsEnabled and ESP.IsEnabled() or Config.Enabled
+            if toggle:GetState() ~= currentState then
+                toggle:SetState(currentState, true) -- Skip callback to avoid recursion
+            end
         end
         
-        -- Monitor Config.Enabled changes (via ESPManager or keybind)
+        -- Monitor Config.Enabled or ESP.IsEnabled changes
         local connection
         connection = RunService.Heartbeat:Connect(function()
-            if toggle:GetState() ~= ESP.IsEnabled() then
-                updateToggleState()
-            end
+            updateToggleState()
         end)
         
         -- Clean up on UI destroy
         UI.Destroy = UI.Destroy or function()
             if connection then connection:Disconnect() end
+            if UI.KeybindConnection then UI.KeybindConnection:Disconnect() end
             UI:Destroy()
         end
     end
@@ -43,12 +46,13 @@ return function(Config, ESP, MiddleClick)
     end)
     
     -- Hook into CensuraDev's toggle key via ESPManager
-    local toggleHandler = ESP.HandleToggleKey()
+    local toggleHandler = ESP.HandleToggleKey and ESP.HandleToggleKey() or nil
     if toggleHandler then
         local system = getgenv().CensuraSystem
         UI.KeybindConnection = UI.InputBegan:Connect(function(input, processed)
             if not processed and input.KeyCode == system.Settings.ToggleKey then
                 local newState = toggleHandler()
+                print("Keybind Toggling ESP to:", newState)
                 -- Update UI toggle state manually
                 local toggle = UI.ContentFrame:FindFirstChild("ESP Enable")
                 if toggle and toggle:IsA("TextButton") then

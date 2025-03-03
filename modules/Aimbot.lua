@@ -8,9 +8,9 @@ local Aimbot = {
     Enabled = false, -- Controlled by UI
     Aiming = false, -- Tracks right-click state
     Target = nil,   -- Current NPC target
+    RenderConnection = nil, -- Store RenderStepped connection
     Settings = {
         AimKey = Enum.UserInputType.MouseButton2, -- RightClick
-        -- Removed HeadOffset for direct head targeting
     }
 }
 
@@ -70,10 +70,10 @@ local function findClosestNPC()
 end
 
 -- Aim at target’s head directly
-local function aimAtTarget(target)
-    if not target or not target.PrimaryPart then return end
+local function aimAtTarget()
+    if not Aimbot.Target or not Aimbot.Target.PrimaryPart then return end
     
-    local head = target:FindFirstChild("Head") or target.PrimaryPart
+    local head = Aimbot.Target:FindFirstChild("Head") or Aimbot.Target.PrimaryPart
     if not head then return end
     
     local targetPos = head.Position -- Direct head targeting, no offset
@@ -93,11 +93,9 @@ function Aimbot.Initialize()
         if input.UserInputType == Aimbot.Settings.AimKey then
             Aimbot.Aiming = true
             Aimbot.Target = findClosestNPC()
-            RunService.RenderStepped:Connect(function()
-                if Aimbot.Aiming and Aimbot.Target then
-                    aimAtTarget(Aimbot.Target)
-                end
-            end)
+            if Aimbot.Target then
+                Aimbot.RenderConnection = RunService.RenderStepped:Connect(aimAtTarget)
+            end
         end
     end)
     
@@ -106,10 +104,9 @@ function Aimbot.Initialize()
         if input.UserInputType == Aimbot.Settings.AimKey then
             Aimbot.Aiming = false
             Aimbot.Target = nil
-            for _, connection in pairs(RunService.RenderStepped:GetConnections()) do
-                if connection.Function == aimAtTarget then
-                    connection:Disconnect()
-                end
+            if Aimbot.RenderConnection then
+                Aimbot.RenderConnection:Disconnect()
+                Aimbot.RenderConnection = nil
             end
         end
     end)

@@ -1,4 +1,4 @@
-return function(Config, ESP, MiddleClick)
+return function(Config, ESP, MiddleClick, Aimbot)
     local CensuraDev = loadstring(game:HttpGet("https://raw.githubusercontent.com/LxckStxp/Censura/main/CensuraDev.lua"))()
     local UI = CensuraDev.new("DeadRails ESP")
     
@@ -23,9 +23,14 @@ return function(Config, ESP, MiddleClick)
         MiddleClick.Enabled = state
     end)
     
-    -- Aimbot Toggle
-    UI:CreateToggle("Aimbot", Aimbot.Enabled, function(state)
-        Aimbot.Enabled = state
+    -- Aimbot Toggle (with safe access and debug)
+    UI:CreateToggle("Aimbot", Aimbot and Aimbot.Enabled or false, function(state)
+        if Aimbot and Aimbot.Enabled ~= nil then
+            Aimbot.Enabled = state
+            print("Aimbot toggled to:", state)
+        else
+            warn("Aimbot module not loaded or Enabled property missing")
+        end
     end)
     
     return UI

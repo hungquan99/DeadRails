@@ -2,12 +2,9 @@ return function(Config, ESP, MiddleClick)
     local CensuraDev = loadstring(game:HttpGet("https://raw.githubusercontent.com/LxckStxp/Censura/main/CensuraDev.lua"))()
     local UI = CensuraDev.new("DeadRails ESP")
     
-    -- Toggle ESP
+    -- Toggle ESP (use ESPManager.SetEnabled for consistent state management)
     UI:CreateToggle("ESP Enable", Config.Enabled, function(state)
-        Config.Enabled = state
-        if not state then
-            ESP.Cleanup()
-        end
+        ESP.SetEnabled(state) -- Use ESPManager.SetEnabled
     end)
     
     -- Max Distance Slider

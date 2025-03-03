@@ -5,9 +5,13 @@ return function(Config, Utilities)
     
     local ESP = {}
     
+    -- Expose public interface from ESPManager
     ESP.Initialize = ESPManager.Initialize
     ESP.Cleanup = ESPManager.Cleanup
     ESP.Update = ESPManager.Update
+    ESP.SetEnabled = ESPManager.SetEnabled
+    ESP.IsEnabled = ESPManager.IsEnabled
+    ESP.HandleToggleKey = ESPManager.HandleToggleKey
     
     return ESP
 end

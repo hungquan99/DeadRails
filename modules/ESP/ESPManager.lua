@@ -6,13 +6,57 @@ return function(Config, Utilities, ESPObject, ESPConfig)
     local ESPManager = {
         Items = {},
         Humanoids = {},
-        Connection = nil
+        Connection = nil,
+        VanillaUIVisible = true -- Track vanilla UI state
     }
+    
+    -- Function to hide vanilla name/health bars for players
+    local function hideVanillaUI()
+        if not ESPManager.VanillaUIVisible then return end
+        
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= Player and player.Character and player.Character:FindFirstChild("Humanoid") then
+                -- Find and hide the PlayerList or BillboardGui for names/health
+                local playerGui = player:FindFirstChild("PlayerGui")
+                if playerGui then
+                    -- Check for Roblox's default name/health UI (often in CoreGui or PlayerGui)
+                    for _, gui in pairs({game.CoreGui, playerGui}) do
+                        for _, child in pairs(gui:GetChildren()) do
+                            if child:IsA("BillboardGui") and child.Name:match("NameGui") or child.Name:match("HealthGui") then
+                                child.Enabled = false
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        ESPManager.VanillaUIVisible = false
+    end
+    
+    -- Function to restore vanilla name/health bars
+    local function restoreVanillaUI()
+        if ESPManager.VanillaUIVisible then return end
+        
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= Player and player.Character and player.Character:FindFirstChild("Humanoid") then
+                local playerGui = player:FindFirstChild("PlayerGui")
+                if playerGui then
+                    for _, gui in pairs({game.CoreGui, playerGui}) do
+                        for _, child in pairs(gui:GetChildren()) do
+                            if child:IsA("BillboardGui") and child.Name:match("NameGui") or child.Name:match("HealthGui") then
+                                child.Enabled = true
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        ESPManager.VanillaUIVisible = true
+    end
     
     function ESPManager.Update()
         if not Config.Enabled then return end
         
-        -- Handle items (corpses, etc.)
         local runtimeItems = workspace:FindFirstChild("RuntimeItems")
         if runtimeItems then
             for _, item in pairs(runtimeItems:GetChildren()) do
@@ -31,7 +75,6 @@ return function(Config, Utilities, ESPObject, ESPConfig)
             end
         end
         
-        -- Handle humanoids (track alive ones only)
         for _, humanoid in pairs(workspace:GetDescendants()) do
             if humanoid:IsA("Model") and humanoid:FindFirstChildOfClass("Humanoid") and humanoid ~= Player.Character then
                 local hum = humanoid:FindFirstChildOfClass("Humanoid")
@@ -48,7 +91,6 @@ return function(Config, Utilities, ESPObject, ESPConfig)
                 if hum and hum.Health > 0 then
                     esp:Update()
                 else
-                    -- Humanoid is dead, stop tracking as enemy
                     esp:Destroy()
                     ESPManager.Humanoids[humanoid] = nil
                 end
@@ -69,6 +111,11 @@ return function(Config, Utilities, ESPObject, ESPConfig)
             end
         end)
         ESPManager.Update()
+        
+        -- Hide vanilla UI when initializing ESP
+        if Config.Enabled then
+            hideVanillaUI()
+        end
     end
     
     function ESPManager.Cleanup()
@@ -84,7 +131,26 @@ return function(Config, Utilities, ESPObject, ESPConfig)
             ESPManager.Connection:Disconnect()
             ESPManager.Connection = nil
         end
+        
+        -- Restore vanilla UI when cleaning up
+        restoreVanillaUI()
     end
+    
+    -- Hook into Config.Enabled changes for real-time UI toggling
+    local originalEnabled = Config.Enabled
+    setmetatable(Config, {
+        __newindex = function(t, k, v)
+            if k == "Enabled" and v ~= originalEnabled then
+                if v then
+                    hideVanillaUI()
+                else
+                    restoreVanillaUI()
+                end
+                originalEnabled = v
+            end
+            rawset(t, k, v)
+        end
+    })
     
     return ESPManager
 end

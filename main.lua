@@ -1,7 +1,7 @@
 -- DeadRails ESP Cheat by LxckStxp
 -- Injected via Executor
 
-local baseUrl = "https://raw.githubusercontent.com/LxckStxp/DeadRails/main/modules/"
+local baseUrl = "https://raw.githubusercontent.com/hungquan99/DeadRails/main/modules/"
 
 local Config = loadstring(game:HttpGet(baseUrl .. "Config.lua"))()
 local Utilities = loadstring(game:HttpGet(baseUrl .. "Utilities.lua"))()

@@ -15,4 +15,4 @@ A comprehensive ESP (Extra Sensory Perception) system for Roblox games, specific
 Simply add this line to your script:
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/LxckStxp/DeadRails/main/main.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hungquan99/DeadRails/main/main.lua"))()

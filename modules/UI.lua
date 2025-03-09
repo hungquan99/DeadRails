@@ -18,11 +18,6 @@ return function(Config, ESP, MiddleClick, Aimbot)
         Config.MaxDistance = value
     end)
     
-    -- Middle Click Utility Toggle
-    UI:CreateToggle("Middle Click Utility", MiddleClick.Enabled, function(state)
-        MiddleClick.Enabled = state
-    end)
-    
     -- Aimbot Toggle (with safe access and debug)
     local aimbotEnabled = (Aimbot and Aimbot.Enabled ~= nil) and Aimbot.Enabled or false
     UI:CreateToggle("Aimbot", aimbotEnabled, function(state)

@@ -1,5 +1,5 @@
--- DeadRails ESP Cheat by LxckStxp
--- Injected via Executor
+if getgenv().SkullHubLoaded then return end
+getgenv().SkullHubLoaded = true
 
 local baseUrl = "https://raw.githubusercontent.com/hungquan99/DeadRails/main/modules/"
 

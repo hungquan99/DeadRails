@@ -14,4 +14,4 @@ ESP.Initialize()
 MiddleClick.Initialize()
 Aimbot.Initialize()
 
-print("DeadRails ESP Loaded Successfully!")
+print("[Skull Hub] Script Loaded Successfully!")

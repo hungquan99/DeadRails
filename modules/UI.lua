@@ -34,7 +34,7 @@ return function(Config, ESP, MiddleClick, Aimbot)
             end
         end)
 
-        local CamASlider = Tabs.Aim:AddSlider("CamASlider", {
+        local CamASlider = Tabs.Ma:AddSlider("CamASlider", {
             Title = "Max Distance",
             Description = "",
             Default = Config.MaxDistance,

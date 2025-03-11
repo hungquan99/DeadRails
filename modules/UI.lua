@@ -34,20 +34,20 @@ return function(Config, ESP, MiddleClick, Aimbot)
             end
         end)
 
-        local CamASlider = Tabs.Ma:AddSlider("CamASlider", {
-            Title = "Max Distance",
-            Description = "",
+        local Slider = Tabs.Ma:AddSlider("Slider", {
+            Title = "Slider",
+            Description = "This is a slider",
             Default = Config.MaxDistance,
             Min = 100,
             Max = 2000,
             Rounding = 1,
+            Callback = function(Value)
+                Config.MaxDistance = Value
+            end
         })
-        CamASlider:OnChanged(function()
-            Config.MaxDistance = CamASlider.Value
-        end)
 
         local aimbotEnabled = (Aimbot and Aimbot.Enabled ~= nil) and Aimbot.Enabled or false
-        local Aim1Toggle = Tabs.Ma:AddToggle("SilentAimV1", { Title = "Aimbot", Description = "• With safe access and debug 🟢", Default = false })
+        local Aim1Toggle = Tabs.Ma:AddToggle("SilentAimV1", { Title = "Aimbot", Description = "• Hold M2 to aim.", Default = false })
         Aim1Toggle:OnChanged(function()
             if Aimbot and Aimbot.Enabled ~= nil then
                 Aimbot.Enabled = Aim1Toggle.Value

@@ -6,13 +6,13 @@ local Player = Players.LocalPlayer
 local Drawing = Drawing or require(game:GetService("ReplicatedStorage"):WaitForChild("DrawingModule"))
 
 local Aimbot = {
-    Enabled = false,
-    Aiming = false,
-    Target = nil,
-    RenderConnection = nil,
-    FOVCircle = nil,
+    Enabled = false, -- Controlled by UI
+    Aiming = false, -- Tracks right-click state
+    Target = nil,   -- Current NPC target
+    RenderConnection = nil, -- Store RenderStepped connection
+    FOVCircle = nil, -- Stores the FOV circle
     Settings = {
-        AimKey = Enum.UserInputType.MouseButton2,
+        AimKey = Enum.UserInputType.MouseButton2, -- RightClick
         FOV = 100 -- Aimbot Field of View
     }
 }
@@ -23,8 +23,9 @@ local function createFOVCircle()
     circle.Thickness = 1
     circle.Filled = false
     circle.Radius = Aimbot.Settings.FOV
-    circle.Color = Color3.fromRGB(255, 0, 0)
+    circle.Color = Color3.fromRGB(0, 0, 0) -- Set color to black
     circle.Transparency = 1
+    circle.Visible = true -- Ensure it is visible
     return circle
 end
 

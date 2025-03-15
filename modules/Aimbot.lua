@@ -5,12 +5,12 @@ local Camera = workspace.CurrentCamera
 local Player = Players.LocalPlayer
 
 local Aimbot = {
-    Enabled = false, -- Controlled by UI
-    Aiming = false, -- Tracks right-click state
-    Target = nil,   -- Current NPC target
-    RenderConnection = nil, -- Store RenderStepped connection
+    Enabled = false,
+    Aiming = false,
+    Target = nil,
+    RenderConnection = nil,
     Settings = {
-        AimKey = Enum.UserInputType.MouseButton2, -- RightClick
+        AimKey = Enum.UserInputType.MouseButton2,
     }
 }
 
@@ -28,7 +28,22 @@ local function getNPCs()
     return npcs
 end
 
--- Find closest NPC to crosshair (excluding players)
+-- Check if there is a direct line of sight to the NPC (wall check)
+local function isVisible(target)
+    if not target or not target.PrimaryPart then return false end
+    local targetPos = target.PrimaryPart.Position
+    local origin = Camera.CFrame.Position
+    local direction = (targetPos - origin).Unit * (targetPos - origin).Magnitude
+    
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterDescendantsInstances = {Player.Character}
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    
+    local raycastResult = workspace:Raycast(origin, direction, raycastParams)
+    return raycastResult and raycastResult.Instance and raycastResult.Instance:IsDescendantOf(target)
+end
+
+-- Find closest NPC to crosshair (excluding players and checking visibility)
 local function findClosestNPC()
     local mouse = UserInputService:GetMouseLocation()
     local ray = Camera:ScreenPointToRay(mouse.X, mouse.Y)
@@ -44,7 +59,7 @@ local function findClosestNPC()
         if model and model:FindFirstChildOfClass("Humanoid") and model ~= Player.Character then
             local hum = model:FindFirstChildOfClass("Humanoid")
             local isPlayer = Players:GetPlayerFromCharacter(model)
-            if hum and hum.Health > 0 and not isPlayer then
+            if hum and hum.Health > 0 and not isPlayer and isVisible(model) then
                 closestNPC = model
                 closestDistance = (Camera.CFrame.Position - raycastResult.Position).Magnitude
             end
@@ -54,7 +69,7 @@ local function findClosestNPC()
     -- Fallback: Check all NPCs for closest to crosshair
     for _, npc in pairs(getNPCs()) do
         local head = npc:FindFirstChild("Head") or npc.PrimaryPart
-        if head then
+        if head and isVisible(npc) then
             local screenPos, onScreen = Camera:WorldToScreenPoint(head.Position)
             if onScreen then
                 local distance = (Vector2.new(screenPos.X, screenPos.Y) - mouse).Magnitude

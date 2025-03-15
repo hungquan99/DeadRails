@@ -3,17 +3,44 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local Player = Players.LocalPlayer
+local Drawing = Drawing or require(game:GetService("ReplicatedStorage"):WaitForChild("DrawingModule"))
 
 local Aimbot = {
     Enabled = false,
     Aiming = false,
     Target = nil,
     RenderConnection = nil,
+    FOVCircle = nil,
     Settings = {
         AimKey = Enum.UserInputType.MouseButton2,
         FOV = 100 -- Aimbot Field of View
     }
 }
+
+-- Create the FOV circle
+local function createFOVCircle()
+    local circle = Drawing.new("Circle")
+    circle.Thickness = 1
+    circle.Filled = false
+    circle.Radius = Aimbot.Settings.FOV
+    circle.Color = Color3.fromRGB(255, 0, 0)
+    circle.Transparency = 1
+    return circle
+end
+
+Aimbot.FOVCircle = createFOVCircle()
+
+-- Update FOV circle position
+local function updateFOVCircle()
+    if Aimbot.FOVCircle then
+        local mousePos = UserInputService:GetMouseLocation()
+        Aimbot.FOVCircle.Position = mousePos
+        Aimbot.FOVCircle.Radius = Aimbot.Settings.FOV
+        Aimbot.FOVCircle.Visible = Aimbot.Enabled
+    end
+end
+
+RunService.RenderStepped:Connect(updateFOVCircle)
 
 -- Utility function to get NPC models (non-player humanoids)
 local function getNPCs()

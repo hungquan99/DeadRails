@@ -11,6 +11,7 @@ local Aimbot = {
     RenderConnection = nil,
     Settings = {
         AimKey = Enum.UserInputType.MouseButton2,
+        FOV = 100 -- Aimbot Field of View
     }
 }
 
@@ -43,7 +44,22 @@ local function isVisible(target)
     return raycastResult and raycastResult.Instance and raycastResult.Instance:IsDescendantOf(target)
 end
 
--- Find closest NPC to crosshair (excluding players and checking visibility)
+-- Check if NPC is within the Aimbot FOV
+local function isWithinFOV(target)
+    if not target or not target.PrimaryPart then return false end
+    local head = target:FindFirstChild("Head") or target.PrimaryPart
+    if not head then return false end
+    
+    local screenPos, onScreen = Camera:WorldToScreenPoint(head.Position)
+    if not onScreen then return false end
+    
+    local mousePos = UserInputService:GetMouseLocation()
+    local distance = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+    
+    return distance <= Aimbot.Settings.FOV
+end
+
+-- Find closest NPC to crosshair (excluding players and checking visibility and FOV)
 local function findClosestNPC()
     local mouse = UserInputService:GetMouseLocation()
     local ray = Camera:ScreenPointToRay(mouse.X, mouse.Y)
@@ -59,7 +75,7 @@ local function findClosestNPC()
         if model and model:FindFirstChildOfClass("Humanoid") and model ~= Player.Character then
             local hum = model:FindFirstChildOfClass("Humanoid")
             local isPlayer = Players:GetPlayerFromCharacter(model)
-            if hum and hum.Health > 0 and not isPlayer and isVisible(model) then
+            if hum and hum.Health > 0 and not isPlayer and isVisible(model) and isWithinFOV(model) then
                 closestNPC = model
                 closestDistance = (Camera.CFrame.Position - raycastResult.Position).Magnitude
             end
@@ -69,7 +85,7 @@ local function findClosestNPC()
     -- Fallback: Check all NPCs for closest to crosshair
     for _, npc in pairs(getNPCs()) do
         local head = npc:FindFirstChild("Head") or npc.PrimaryPart
-        if head and isVisible(npc) then
+        if head and isVisible(npc) and isWithinFOV(npc) then
             local screenPos, onScreen = Camera:WorldToScreenPoint(head.Position)
             if onScreen then
                 local distance = (Vector2.new(screenPos.X, screenPos.Y) - mouse).Magnitude

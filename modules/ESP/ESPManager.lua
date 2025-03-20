@@ -29,7 +29,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
             end
         end
         ESPManager.VanillaUIVisible = false
-        print("Vanilla UI hidden - ESP Enabled")
+        warn("[Skull Hub] Vanilla UI hidden - ESP Enabled")
     end
     
     -- Function to restore vanilla name/health bars
@@ -51,7 +51,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
             end
         end
         ESPManager.VanillaUIVisible = true
-        print("Vanilla UI restored - ESP Disabled")
+        warn("[Skull Hub] Vanilla UI restored - ESP Disabled")
     end
     
     function ESPManager.Update()
@@ -116,7 +116,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         if Config.Enabled then
             hideVanillaUI()
         end
-        print("ESP Initialized - Enabled:", Config.Enabled)
+        warn("[Skull Hub] ESP Initialized - Enabled:", Config.Enabled)
     end
     
     function ESPManager.Cleanup()
@@ -135,12 +135,12 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         
         -- Restore vanilla UI when cleaning up
         restoreVanillaUI()
-        print("ESP Cleaned Up - Restored Vanilla UI")
+        print("[Skull Hub] ESP Cleaned Up - Restored Vanilla UI")
     end
     
     -- Handle ESP enable/disable with reset and debug
     function ESPManager.SetEnabled(enabled)
-        print("Attempting to set ESP Enabled to:", enabled)
+        print("[Skull Hub] Attempting to set ESP Enabled to:", enabled)
         
         -- Ensure Config.Enabled reflects the desired state
         Config.Enabled = enabled
@@ -169,7 +169,7 @@ return function(Config, Utilities, ESPObject, ESPConfig)
         
         return function()
             local newState = not ESPManager.IsEnabled()
-            print("Keybind Toggling ESP to:", newState)
+            print("[Skull Hub] Keybind Toggling ESP to:", newState)
             ESPManager.SetEnabled(newState)
             return newState
         end
